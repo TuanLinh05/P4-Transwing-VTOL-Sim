@@ -1,0 +1,604 @@
+<?xml version="1.0"?>
+<sdf version="1.9">
+  <model name="transwing_surrogate">
+    <self_collide>false</self_collide>
+    <allow_auto_disable>false</allow_auto_disable>
+
+    <!--
+      Body axes use Gazebo FLU: +X forward, +Y left, +Z up.
+
+      The folding links rotate 120 degrees around the normalized oblique axis
+      (1, -1, 1). At full fold the transform is:
+
+        local +X (wing leading edge / propeller thrust) -> body +Z
+        local +Y (left span direction)                 -> body -X
+        local -Y (right span direction)                -> body -X
+
+      Consequently the wings become vertical and lie along the fuselage while
+      both outer panels fold aft and all four rotor thrust axes become
+      vertical. The right hinge axis is mirrored; using the same axis for both
+      sides would incorrectly fold the right panel forward.
+    -->
+
+    <link name="base_link">
+      <inertial>
+        <mass>5.6</mass>
+        <inertia>
+          <ixx>0.16</ixx>
+          <iyy>0.82</iyy>
+          <izz>0.88</izz>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyz>0</iyz>
+        </inertia>
+      </inertial>
+
+      <collision name="fuselage_collision">
+        <geometry>
+          <box>
+            <size>1.55 0.20 0.20</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <visual name="fuselage_body">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>model://transwing_surrogate/meshes/fuselage.dae</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <ambient>0.12 0.16 0.20 1</ambient>
+          <diffuse>0.20 0.28 0.36 1</diffuse>
+          <specular>0.35 0.35 0.35 1</specular>
+        </material>
+      </visual>
+
+      <visual name="tail_boom">
+        <pose>-0.91 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>model://transwing_surrogate/meshes/tail_boom.dae</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <ambient>0.10 0.13 0.17 1</ambient>
+          <diffuse>0.17 0.23 0.30 1</diffuse>
+        </material>
+      </visual>
+
+      <!-- Small fixed wing roots keep the hinges clear of the fuselage. -->
+      <visual name="inner_wing">
+        <pose>0.03 0 0.03 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>model://transwing_surrogate/meshes/inner_wing.dae</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <ambient>0.55 0.58 0.61 1</ambient>
+          <diffuse>0.75 0.78 0.81 1</diffuse>
+        </material>
+      </visual>
+
+      <collision name="inner_wing_collision">
+        <pose>0.03 0 0.03 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.31 0.44 0.045</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <visual name="horizontal_tail">
+        <pose>-1.02 0 0.02 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>model://transwing_surrogate/meshes/htail.dae</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <ambient>0.48 0.51 0.54 1</ambient>
+          <diffuse>0.67 0.70 0.73 1</diffuse>
+        </material>
+      </visual>
+
+      <visual name="vertical_tail">
+        <pose>-0.98 0 0.15 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>model://transwing_surrogate/meshes/vtail.dae</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <ambient>0.48 0.51 0.54 1</ambient>
+          <diffuse>0.67 0.70 0.73 1</diffuse>
+        </material>
+      </visual>
+
+      <sensor name="imu_sensor" type="imu">
+        <always_on>true</always_on>
+        <update_rate>250</update_rate>
+      </sensor>
+
+      <sensor name="navsat_sensor" type="navsat">
+        <pose>0.20 0 0.10 0 0 0</pose>
+        <always_on>true</always_on>
+        <update_rate>10</update_rate>
+      </sensor>
+    </link>
+
+    <link name="left_wing_link">
+      <pose relative_to="base_link">0.03 0.22 0.03 0 0 0</pose>
+      <inertial>
+        <pose>0 0.43 0 0 0 0</pose>
+        <mass>0.65</mass>
+        <inertia>
+          <ixx>0.0402</ixx>
+          <iyy>0.0050</iyy>
+          <izz>0.0450</izz>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyz>0</iyz>
+        </inertia>
+      </inertial>
+      <collision name="left_wing_collision">
+        <pose>0 0.43 0 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.30 0.86 0.04</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="left_wing">
+        <pose>0 0.43 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>model://transwing_surrogate/meshes/wing.dae</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <ambient>0.72 0.73 0.75 1</ambient>
+          <diffuse>0.88 0.89 0.91 1</diffuse>
+        </material>
+      </visual>
+      <visual name="left_hinge_marker">
+        <geometry>
+          <sphere>
+            <radius>0.055</radius>
+          </sphere>
+        </geometry>
+        <material>
+          <ambient>0.90 0.38 0.06 1</ambient>
+          <diffuse>1.00 0.48 0.08 1</diffuse>
+        </material>
+      </visual>
+    </link>
+
+    <link name="right_wing_link">
+      <pose relative_to="base_link">0.03 -0.22 0.03 0 0 0</pose>
+      <inertial>
+        <pose>0 -0.43 0 0 0 0</pose>
+        <mass>0.65</mass>
+        <inertia>
+          <ixx>0.0402</ixx>
+          <iyy>0.0050</iyy>
+          <izz>0.0450</izz>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyz>0</iyz>
+        </inertia>
+      </inertial>
+      <collision name="right_wing_collision">
+        <pose>0 -0.43 0 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.30 0.86 0.04</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="right_wing">
+        <pose>0 -0.43 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>model://transwing_surrogate/meshes/wing.dae</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <ambient>0.72 0.73 0.75 1</ambient>
+          <diffuse>0.88 0.89 0.91 1</diffuse>
+        </material>
+      </visual>
+      <visual name="right_hinge_marker">
+        <geometry>
+          <sphere>
+            <radius>0.055</radius>
+          </sphere>
+        </geometry>
+        <material>
+          <ambient>0.90 0.38 0.06 1</ambient>
+          <diffuse>1.00 0.48 0.08 1</diffuse>
+        </material>
+      </visual>
+    </link>
+
+    <link name="left_aileron_link">
+      <pose relative_to="left_wing_link">-0.15 0.51 0 0 0 0</pose>
+      <inertial>
+        <pose>-0.04 0 0 0 0 0</pose>
+        <mass>0.06</mass>
+        <inertia>
+          <ixx>0.00125</ixx>
+          <iyy>0.00004</iyy>
+          <izz>0.00128</izz>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyz>0</iyz>
+        </inertia>
+      </inertial>
+      <visual name="left_aileron">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>model://transwing_surrogate/meshes/aileron.dae</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <ambient>0.08 0.31 0.67 1</ambient>
+          <diffuse>0.10 0.43 0.92 1</diffuse>
+        </material>
+      </visual>
+    </link>
+
+    <link name="right_aileron_link">
+      <pose relative_to="right_wing_link">-0.15 -0.51 0 0 0 0</pose>
+      <inertial>
+        <pose>-0.04 0 0 0 0 0</pose>
+        <mass>0.06</mass>
+        <inertia>
+          <ixx>0.00125</ixx>
+          <iyy>0.00004</iyy>
+          <izz>0.00128</izz>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyz>0</iyz>
+        </inertia>
+      </inertial>
+      <visual name="right_aileron">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>model://transwing_surrogate/meshes/aileron.dae</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <ambient>0.08 0.31 0.67 1</ambient>
+          <diffuse>0.10 0.43 0.92 1</diffuse>
+        </material>
+      </visual>
+    </link>
+
+    <link name="elevator_link">
+      <pose relative_to="base_link">-1.155 0 0.02 0 0 0</pose>
+      <inertial>
+        <pose>-0.045 0 0 0 0 0</pose>
+        <mass>0.05</mass>
+        <inertia>
+          <ixx>0.00160</ixx>
+          <iyy>0.00004</iyy>
+          <izz>0.00162</izz>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyz>0</iyz>
+        </inertia>
+      </inertial>
+      <visual name="elevator">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>model://transwing_surrogate/meshes/elevator.dae</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <ambient>0.08 0.31 0.67 1</ambient>
+          <diffuse>0.10 0.43 0.92 1</diffuse>
+        </material>
+      </visual>
+    </link>
+
+    <link name="rudder_link">
+      <pose relative_to="base_link">-1.13 0 0.17 0 0 0</pose>
+      <inertial>
+        <pose>-0.045 0 0.04 0 0 0</pose>
+        <mass>0.04</mass>
+        <inertia>
+          <ixx>0.00010</ixx>
+          <iyy>0.00030</iyy>
+          <izz>0.00022</izz>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyz>0</iyz>
+        </inertia>
+      </inertial>
+      <visual name="rudder">
+        <pose>0 0 0.04 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>model://transwing_surrogate/meshes/rudder.dae</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <ambient>0.08 0.31 0.67 1</ambient>
+          <diffuse>0.10 0.43 0.92 1</diffuse>
+        </material>
+      </visual>
+    </link>
+
+    <!-- Rotor links use local +X as the shaft and thrust direction. -->
+    <link name="rotor_left_inner_link">
+      <pose relative_to="left_wing_link">0.18 0.24 0 0 0 0</pose>
+      <inertial>
+        <mass>0.08</mass>
+        <inertia>
+          <ixx>0.00105</ixx>
+          <iyy>0.00054</iyy>
+          <izz>0.00054</izz>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyz>0</iyz>
+        </inertia>
+      </inertial>
+      <visual name="motor">
+        <pose>-0.035 0 0 0 1.570796326794897 0</pose>
+        <geometry>
+          <cylinder><radius>0.052</radius><length>0.13</length></cylinder>
+        </geometry>
+        <material><ambient>0.15 0.15 0.16 1</ambient><diffuse>0.22 0.22 0.24 1</diffuse></material>
+      </visual>
+      <visual name="disc">
+        <pose>0.055 0 0 0 1.570796326794897 0</pose>
+        <geometry>
+          <cylinder><radius>0.16</radius><length>0.004</length></cylinder>
+        </geometry>
+        <material><ambient>0.05 0.05 0.05 0.28</ambient><diffuse>0.10 0.10 0.10 0.28</diffuse></material>
+        <transparency>0.72</transparency>
+      </visual>
+      <visual name="blade_y">
+        <pose>0.058 0 0 0 0 0</pose>
+        <geometry><box><size>0.012 0.31 0.018</size></box></geometry>
+        <material><ambient>0.05 0.05 0.05 1</ambient><diffuse>0.08 0.08 0.08 1</diffuse></material>
+      </visual>
+      <visual name="blade_z">
+        <pose>0.058 0 0 0 0 0</pose>
+        <geometry><box><size>0.012 0.018 0.31</size></box></geometry>
+        <material><ambient>0.05 0.05 0.05 1</ambient><diffuse>0.08 0.08 0.08 1</diffuse></material>
+      </visual>
+    </link>
+
+    <link name="rotor_left_outer_link">
+      <pose relative_to="left_wing_link">0.18 0.67 0 0 0 0</pose>
+      <inertial>
+        <mass>0.08</mass>
+        <inertia>
+          <ixx>0.00105</ixx><iyy>0.00054</iyy><izz>0.00054</izz>
+          <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+        </inertia>
+      </inertial>
+      <visual name="motor">
+        <pose>-0.035 0 0 0 1.570796326794897 0</pose>
+        <geometry><cylinder><radius>0.052</radius><length>0.13</length></cylinder></geometry>
+        <material><ambient>0.15 0.15 0.16 1</ambient><diffuse>0.22 0.22 0.24 1</diffuse></material>
+      </visual>
+      <visual name="disc">
+        <pose>0.055 0 0 0 1.570796326794897 0</pose>
+        <geometry><cylinder><radius>0.16</radius><length>0.004</length></cylinder></geometry>
+        <material><ambient>0.05 0.05 0.05 0.28</ambient><diffuse>0.10 0.10 0.10 0.28</diffuse></material>
+        <transparency>0.72</transparency>
+      </visual>
+      <visual name="blade_y">
+        <pose>0.058 0 0 0 0 0</pose>
+        <geometry><box><size>0.012 0.31 0.018</size></box></geometry>
+        <material><ambient>0.05 0.05 0.05 1</ambient><diffuse>0.08 0.08 0.08 1</diffuse></material>
+      </visual>
+      <visual name="blade_z">
+        <pose>0.058 0 0 0 0 0</pose>
+        <geometry><box><size>0.012 0.018 0.31</size></box></geometry>
+        <material><ambient>0.05 0.05 0.05 1</ambient><diffuse>0.08 0.08 0.08 1</diffuse></material>
+      </visual>
+    </link>
+
+    <link name="rotor_right_inner_link">
+      <pose relative_to="right_wing_link">0.18 -0.24 0 0 0 0</pose>
+      <inertial>
+        <mass>0.08</mass>
+        <inertia>
+          <ixx>0.00105</ixx><iyy>0.00054</iyy><izz>0.00054</izz>
+          <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+        </inertia>
+      </inertial>
+      <visual name="motor">
+        <pose>-0.035 0 0 0 1.570796326794897 0</pose>
+        <geometry><cylinder><radius>0.052</radius><length>0.13</length></cylinder></geometry>
+        <material><ambient>0.15 0.15 0.16 1</ambient><diffuse>0.22 0.22 0.24 1</diffuse></material>
+      </visual>
+      <visual name="disc">
+        <pose>0.055 0 0 0 1.570796326794897 0</pose>
+        <geometry><cylinder><radius>0.16</radius><length>0.004</length></cylinder></geometry>
+        <material><ambient>0.05 0.05 0.05 0.28</ambient><diffuse>0.10 0.10 0.10 0.28</diffuse></material>
+        <transparency>0.72</transparency>
+      </visual>
+      <visual name="blade_y">
+        <pose>0.058 0 0 0 0 0</pose>
+        <geometry><box><size>0.012 0.31 0.018</size></box></geometry>
+        <material><ambient>0.05 0.05 0.05 1</ambient><diffuse>0.08 0.08 0.08 1</diffuse></material>
+      </visual>
+      <visual name="blade_z">
+        <pose>0.058 0 0 0 0 0</pose>
+        <geometry><box><size>0.012 0.018 0.31</size></box></geometry>
+        <material><ambient>0.05 0.05 0.05 1</ambient><diffuse>0.08 0.08 0.08 1</diffuse></material>
+      </visual>
+    </link>
+
+    <link name="rotor_right_outer_link">
+      <pose relative_to="right_wing_link">0.18 -0.67 0 0 0 0</pose>
+      <inertial>
+        <mass>0.08</mass>
+        <inertia>
+          <ixx>0.00105</ixx><iyy>0.00054</iyy><izz>0.00054</izz>
+          <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+        </inertia>
+      </inertial>
+      <visual name="motor">
+        <pose>-0.035 0 0 0 1.570796326794897 0</pose>
+        <geometry><cylinder><radius>0.052</radius><length>0.13</length></cylinder></geometry>
+        <material><ambient>0.15 0.15 0.16 1</ambient><diffuse>0.22 0.22 0.24 1</diffuse></material>
+      </visual>
+      <visual name="disc">
+        <pose>0.055 0 0 0 1.570796326794897 0</pose>
+        <geometry><cylinder><radius>0.16</radius><length>0.004</length></cylinder></geometry>
+        <material><ambient>0.05 0.05 0.05 0.28</ambient><diffuse>0.10 0.10 0.10 0.28</diffuse></material>
+        <transparency>0.72</transparency>
+      </visual>
+      <visual name="blade_y">
+        <pose>0.058 0 0 0 0 0</pose>
+        <geometry><box><size>0.012 0.31 0.018</size></box></geometry>
+        <material><ambient>0.05 0.05 0.05 1</ambient><diffuse>0.08 0.08 0.08 1</diffuse></material>
+      </visual>
+      <visual name="blade_z">
+        <pose>0.058 0 0 0 0 0</pose>
+        <geometry><box><size>0.012 0.018 0.31</size></box></geometry>
+        <material><ambient>0.05 0.05 0.05 1</ambient><diffuse>0.08 0.08 0.08 1</diffuse></material>
+      </visual>
+    </link>
+
+    <joint name="left_fold_joint" type="revolute">
+      <pose relative_to="base_link">0.03 0.22 0.03 0 0 0</pose>
+      <parent>base_link</parent>
+      <child>left_wing_link</child>
+      <axis>
+        <xyz expressed_in="base_link">0.577350269 -0.577350269 0.577350269</xyz>
+        <limit>
+          <lower>-0.034906585</lower>
+          <upper>2.129301687</upper>
+          <effort>60</effort>
+          <velocity>0.8</velocity>
+        </limit>
+        <dynamics>
+          <damping>1.5</damping>
+          <friction>0.15</friction>
+        </dynamics>
+      </axis>
+    </joint>
+
+    <joint name="right_fold_joint" type="revolute">
+      <pose relative_to="base_link">0.03 -0.22 0.03 0 0 0</pose>
+      <parent>base_link</parent>
+      <child>right_wing_link</child>
+      <axis>
+        <xyz expressed_in="base_link">-0.577350269 -0.577350269 -0.577350269</xyz>
+        <limit>
+          <lower>-0.034906585</lower>
+          <upper>2.129301687</upper>
+          <effort>60</effort>
+          <velocity>0.8</velocity>
+        </limit>
+        <dynamics>
+          <damping>1.5</damping>
+          <friction>0.15</friction>
+        </dynamics>
+      </axis>
+    </joint>
+
+    <joint name="left_aileron_joint" type="revolute">
+      <pose relative_to="left_wing_link">-0.15 0.51 0 0 0 0</pose>
+      <parent>left_wing_link</parent>
+      <child>left_aileron_link</child>
+      <axis>
+        <xyz expressed_in="left_wing_link">0 1 0</xyz>
+        <limit><lower>-0.35</lower><upper>0.35</upper><effort>8</effort><velocity>3</velocity></limit>
+        <dynamics><damping>0.08</damping></dynamics>
+      </axis>
+    </joint>
+
+    <joint name="right_aileron_joint" type="revolute">
+      <pose relative_to="right_wing_link">-0.15 -0.51 0 0 0 0</pose>
+      <parent>right_wing_link</parent>
+      <child>right_aileron_link</child>
+      <axis>
+        <xyz expressed_in="right_wing_link">0 1 0</xyz>
+        <limit><lower>-0.35</lower><upper>0.35</upper><effort>8</effort><velocity>3</velocity></limit>
+        <dynamics><damping>0.08</damping></dynamics>
+      </axis>
+    </joint>
+
+    <joint name="elevator_joint" type="revolute">
+      <pose relative_to="base_link">-1.155 0 0.02 0 0 0</pose>
+      <parent>base_link</parent>
+      <child>elevator_link</child>
+      <axis>
+        <xyz expressed_in="base_link">0 1 0</xyz>
+        <limit><lower>-0.40</lower><upper>0.40</upper><effort>8</effort><velocity>3</velocity></limit>
+        <dynamics><damping>0.08</damping></dynamics>
+      </axis>
+    </joint>
+
+    <joint name="rudder_joint" type="revolute">
+      <pose relative_to="base_link">-1.13 0 0.17 0 0 0</pose>
+      <parent>base_link</parent>
+      <child>rudder_link</child>
+      <axis>
+        <xyz expressed_in="base_link">0 0 1</xyz>
+        <limit><lower>-0.45</lower><upper>0.45</upper><effort>8</effort><velocity>3</velocity></limit>
+        <dynamics><damping>0.08</damping></dynamics>
+      </axis>
+    </joint>
+
+    <joint name="rotor_left_inner_joint" type="revolute">
+      <pose relative_to="left_wing_link">0.18 0.24 0 0 0 0</pose>
+      <parent>left_wing_link</parent>
+      <child>rotor_left_inner_link</child>
+      <axis>
+        <xyz expressed_in="left_wing_link">1 0 0</xyz>
+        <limit><effort>4</effort><velocity>2200</velocity></limit>
+        <dynamics><damping>0.00002</damping></dynamics>
+      </axis>
+    </joint>
+
+    <joint name="rotor_left_outer_joint" type="revolute">
+      <pose relative_to="left_wing_link">0.18 0.67 0 0 0 0</pose>
+      <parent>left_wing_link</parent>
+      <child>rotor_left_outer_link</child>
+      <axis>
+        <xyz expressed_in="left_wing_link">1 0 0</xyz>
+        <limit><effort>4</effort><velocity>2200</velocity></limit>
+        <dynamics><damping>0.00002</damping></dynamics>
+      </axis>
+    </joint>
+
+    <joint name="rotor_right_inner_joint" type="revolute">
+      <pose relative_to="right_wing_link">0.18 -0.24 0 0 0 0</pose>
+      <parent>right_wing_link</parent>
+      <child>rotor_right_inner_link</child>
+      <axis>
+        <xyz expressed_in="right_wing_link">1 0 0</xyz>
+        <limit><effort>4</effort><velocity>2200</velocity></limit>
+        <dynamics><damping>0.00002</damping></dynamics>
+      </axis>
+    </joint>
+
+    <joint name="rotor_right_outer_joint" type="revolute">
+      <pose relative_to="right_wing_link">0.18 -0.67 0 0 0 0</pose>
+      <parent>right_wing_link</parent>
+      <child>rotor_right_outer_link</child>
+      <axis>
+        <xyz expressed_in="right_wing_link">1 0 0</xyz>
+        <limit><effort>4</effort><velocity>2200</velocity></limit>
+        <dynamics><damping>0.00002</damping></dynamics>
+      </axis>
+    </joint>
+
+    <plugin filename="gz-sim-joint-state-publisher-system"
+      name="gz::sim::systems::JointStatePublisher"/>
+  </model>
+</sdf>

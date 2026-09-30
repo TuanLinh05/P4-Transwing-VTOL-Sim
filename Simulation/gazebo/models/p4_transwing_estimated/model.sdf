@@ -1,0 +1,629 @@
+<?xml version="1.0"?>
+<sdf version="1.9">
+  <model name="p4_transwing_estimated">
+    <self_collide>false</self_collide>
+    <allow_auto_disable>false</allow_auto_disable>
+
+    <!--
+      Coordinate convention: Gazebo FLU (+X forward, +Y left, +Z up).
+
+      SOURCE-BASED VALUES:
+        Wingspan                 3.99288 m (13.1 ft)
+        Wing area                0.83613 m^2 (9 ft^2)
+        MTOW                     40.5 kg (89 lb)
+        Maximum propeller speed  733.04 rad/s (7000 rpm)
+        Fold travel              2.05943 rad, measured from asset animation
+
+      Joint convention:
+        hover = 0 rad (safe initial state)
+        cruise = -2.05943 rad
+
+      ESTIMATED VALUES:
+        Mass distribution, inertias, collision primitives, aerodynamic
+        coefficients, actuator effort/rate and propeller thrust coefficient.
+        These estimates are intentionally grouped and documented in
+        Simulation/gazebo/P4_ESTIMATION_NOTES.md.
+
+      Total modeled mass is 40.5 kg:
+        base 17.0 + wings 22.4 + rotors 0.8
+        + four ailerons 0.2 + two ruddervators 0.1.
+    -->
+
+    <link name="base_link">
+      <inertial>
+        <pose>-0.20 0 0.11 0 0 0</pose>
+        <mass>17.0</mass>
+        <inertia>
+          <ixx>1.10</ixx>
+          <iyy>5.80</iyy>
+          <izz>6.30</izz>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyz>0</iyz>
+        </inertia>
+      </inertial>
+
+      <visual name="p4_fuselage_visual">
+        <geometry>
+          <mesh>
+            <uri>model://p4_transwing_estimated/meshes/p4_fuselage.obj</uri>
+          </mesh>
+        </geometry>
+      </visual>
+
+      <!-- Physics uses stable primitives instead of the high-detail mesh. -->
+      <collision name="fuselage_collision">
+        <pose>-0.36 0 0.23 0 0 0</pose>
+        <geometry>
+          <box><size>1.95 0.42 0.42</size></box>
+        </geometry>
+      </collision>
+      <collision name="left_vtail_collision">
+        <pose>-1.05 0.22 0.37 0.62 0 0</pose>
+        <geometry>
+          <box><size>0.72 0.34 0.045</size></box>
+        </geometry>
+      </collision>
+      <collision name="right_vtail_collision">
+        <pose>-1.05 -0.22 0.37 -0.62 0 0</pose>
+        <geometry>
+          <box><size>0.72 0.34 0.045</size></box>
+        </geometry>
+      </collision>
+
+      <sensor name="imu_sensor" type="imu">
+        <always_on>true</always_on>
+        <update_rate>250</update_rate>
+      </sensor>
+      <sensor name="navsat_sensor" type="navsat">
+        <pose>0.18 0 0.38 0 0 0</pose>
+        <always_on>true</always_on>
+        <update_rate>10</update_rate>
+      </sensor>
+      <sensor name="air_pressure_sensor" type="air_pressure">
+        <pose>-0.65 0 0.24 0 0 0</pose>
+        <always_on>true</always_on>
+        <update_rate>50</update_rate>
+      </sensor>
+    </link>
+
+    <link name="left_wing_link">
+      <!-- Asset hover orientation; -2.05943 rad returns it to cruise. -->
+      <pose relative_to="base_link">0 0.464326195 0 -0.064463691 -1.495878627 1.643201219</pose>
+      <inertial>
+        <pose>0.15 0.72 -0.03 0 0 0</pose>
+        <mass>11.2</mass>
+        <inertia>
+          <ixx>2.35</ixx>
+          <iyy>0.40</iyy>
+          <izz>2.65</izz>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyz>0</iyz>
+        </inertia>
+      </inertial>
+      <visual name="left_wing_visual">
+        <geometry>
+          <mesh>
+            <uri>model://p4_transwing_estimated/meshes/p4_left_wing.obj</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="left_wing_collision">
+        <pose>0.04 0.72 -0.035 0 0 0</pose>
+        <geometry>
+          <box><size>0.60 1.52 0.075</size></box>
+        </geometry>
+      </collision>
+      <collision name="left_inner_nacelle_collision">
+        <pose>0.33 0.027 -0.060 0 1.570796327 0</pose>
+        <geometry>
+          <cylinder><radius>0.085</radius><length>0.28</length></cylinder>
+        </geometry>
+      </collision>
+      <collision name="left_outer_nacelle_collision">
+        <pose>0.33 0.712 -0.064 0 1.570796327 0</pose>
+        <geometry>
+          <cylinder><radius>0.085</radius><length>0.28</length></cylinder>
+        </geometry>
+      </collision>
+    </link>
+
+    <link name="right_wing_link">
+      <pose relative_to="base_link">0 -0.464326195 0 0.064462530 -1.495878634 -1.643200141</pose>
+      <inertial>
+        <pose>0.15 -0.72 -0.03 0 0 0</pose>
+        <mass>11.2</mass>
+        <inertia>
+          <ixx>2.35</ixx>
+          <iyy>0.40</iyy>
+          <izz>2.65</izz>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyz>0</iyz>
+        </inertia>
+      </inertial>
+      <visual name="right_wing_visual">
+        <geometry>
+          <mesh>
+            <uri>model://p4_transwing_estimated/meshes/p4_right_wing.obj</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="right_wing_collision">
+        <pose>0.04 -0.72 -0.035 0 0 0</pose>
+        <geometry>
+          <box><size>0.60 1.52 0.075</size></box>
+        </geometry>
+      </collision>
+      <collision name="right_inner_nacelle_collision">
+        <pose>0.33 -0.027 -0.060 0 1.570796327 0</pose>
+        <geometry>
+          <cylinder><radius>0.085</radius><length>0.28</length></cylinder>
+        </geometry>
+      </collision>
+      <collision name="right_outer_nacelle_collision">
+        <pose>0.33 -0.712 -0.064 0 1.570796327 0</pose>
+        <geometry>
+          <cylinder><radius>0.085</radius><length>0.28</length></cylinder>
+        </geometry>
+      </collision>
+    </link>
+
+    <!--
+      Rotor frames are rotated so local +Z is aircraft +X in cruise.
+      MulticopterMotorModel always applies thrust along rotor-link local +Z.
+    -->
+    <link name="rotor_left_inner_link">
+      <pose relative_to="left_wing_link">0.431504808 0.026649284 -0.059664816 1.570796327 0 1.570796327</pose>
+      <inertial>
+        <mass>0.20</mass>
+        <inertia>
+          <ixx>0.0032</ixx><iyy>0.0032</iyy><izz>0.0063</izz>
+          <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+        </inertia>
+      </inertial>
+      <visual name="propeller_visual">
+        <geometry>
+          <mesh>
+            <uri>model://p4_transwing_estimated/meshes/p4_prop_left_inner.obj</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+
+    <link name="rotor_left_outer_link">
+      <pose relative_to="left_wing_link">0.431334830 0.711747590 -0.064363363 1.570796327 0 1.570796327</pose>
+      <inertial>
+        <mass>0.20</mass>
+        <inertia>
+          <ixx>0.0032</ixx><iyy>0.0032</iyy><izz>0.0063</izz>
+          <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+        </inertia>
+      </inertial>
+      <visual name="propeller_visual">
+        <geometry>
+          <mesh>
+            <uri>model://p4_transwing_estimated/meshes/p4_prop_left_outer.obj</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+
+    <link name="rotor_right_inner_link">
+      <pose relative_to="right_wing_link">0.431504890 -0.026649462 -0.059664586 1.570796327 0 1.570796327</pose>
+      <inertial>
+        <mass>0.20</mass>
+        <inertia>
+          <ixx>0.0032</ixx><iyy>0.0032</iyy><izz>0.0063</izz>
+          <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+        </inertia>
+      </inertial>
+      <visual name="propeller_visual">
+        <geometry>
+          <mesh>
+            <uri>model://p4_transwing_estimated/meshes/p4_prop_right_inner.obj</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+
+    <link name="rotor_right_outer_link">
+      <pose relative_to="right_wing_link">0.431334674 -0.711747864 -0.064363093 1.570796327 0 1.570796327</pose>
+      <inertial>
+        <mass>0.20</mass>
+        <inertia>
+          <ixx>0.0032</ixx><iyy>0.0032</iyy><izz>0.0063</izz>
+          <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+        </inertia>
+      </inertial>
+      <visual name="propeller_visual">
+        <geometry>
+          <mesh>
+            <uri>model://p4_transwing_estimated/meshes/p4_prop_right_outer.obj</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+
+    <!-- Four aerodynamic aileron links, as specified by the X-P4 UAFM. -->
+    <link name="left_inboard_aileron_link">
+      <pose relative_to="left_wing_link">-0.18 0.43 0 0 0 0</pose>
+      <inertial>
+        <mass>0.05</mass>
+        <inertia>
+          <ixx>0.00040</ixx><iyy>0.00070</iyy><izz>0.00042</izz>
+          <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+        </inertia>
+      </inertial>
+    </link>
+    <link name="left_outboard_aileron_link">
+      <pose relative_to="left_wing_link">-0.16 1.14 0 0 0 0</pose>
+      <inertial>
+        <mass>0.05</mass>
+        <inertia>
+          <ixx>0.00040</ixx><iyy>0.00070</iyy><izz>0.00042</izz>
+          <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+        </inertia>
+      </inertial>
+    </link>
+    <link name="right_inboard_aileron_link">
+      <pose relative_to="right_wing_link">-0.18 -0.43 0 0 0 0</pose>
+      <inertial>
+        <mass>0.05</mass>
+        <inertia>
+          <ixx>0.00040</ixx><iyy>0.00070</iyy><izz>0.00042</izz>
+          <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+        </inertia>
+      </inertial>
+    </link>
+    <link name="right_outboard_aileron_link">
+      <pose relative_to="right_wing_link">-0.16 -1.14 0 0 0 0</pose>
+      <inertial>
+        <mass>0.05</mass>
+        <inertia>
+          <ixx>0.00040</ixx><iyy>0.00070</iyy><izz>0.00042</izz>
+          <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+        </inertia>
+      </inertial>
+    </link>
+
+    <!--
+      The supplied asset does not split its living-hinge surfaces. These
+      invisible links carry the estimated aerodynamic ruddervator forces;
+      their appearance remains part of the textured fuselage visual.
+    -->
+    <link name="left_ruddervator_link">
+      <pose relative_to="base_link">-1.10 0.24 0.39 0.62 0 0</pose>
+      <inertial>
+        <mass>0.05</mass>
+        <inertia>
+          <ixx>0.00035</ixx><iyy>0.00150</iyy><izz>0.00155</izz>
+          <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+        </inertia>
+      </inertial>
+    </link>
+    <link name="right_ruddervator_link">
+      <pose relative_to="base_link">-1.10 -0.24 0.39 -0.62 0 0</pose>
+      <inertial>
+        <mass>0.05</mass>
+        <inertia>
+          <ixx>0.00035</ixx><iyy>0.00150</iyy><izz>0.00155</izz>
+          <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+        </inertia>
+      </inertial>
+    </link>
+
+    <!-- The two measured animation axes reproduce the asset's fold direction. -->
+    <joint name="left_fold_joint" type="revolute">
+      <pose relative_to="base_link">0 0.464326195 0 0 0 0</pose>
+      <parent>base_link</parent>
+      <child>left_wing_link</child>
+      <axis>
+        <xyz expressed_in="base_link">0.561938964 -0.560297558 0.608515610</xyz>
+        <limit>
+          <lower>-2.059432253</lower><upper>0</upper>
+          <effort>2000</effort><velocity>0.35</velocity>
+        </limit>
+        <dynamics><damping>40.0</damping><friction>2.0</friction></dynamics>
+      </axis>
+    </joint>
+    <joint name="right_fold_joint" type="revolute">
+      <pose relative_to="base_link">0 -0.464326195 0 0 0 0</pose>
+      <parent>base_link</parent>
+      <child>right_wing_link</child>
+      <axis>
+        <xyz expressed_in="base_link">-0.561939013 -0.560297509 -0.608515610</xyz>
+        <limit>
+          <lower>-2.059432253</lower><upper>0</upper>
+          <effort>2000</effort><velocity>0.35</velocity>
+        </limit>
+        <dynamics><damping>40.0</damping><friction>2.0</friction></dynamics>
+      </axis>
+    </joint>
+
+    <!-- Propeller joint axes are local +Z, matching the motor plugin. -->
+    <joint name="rotor_left_inner_joint" type="revolute">
+      <pose relative_to="left_wing_link">0.431504808 0.026649284 -0.059664816 1.570796327 0 1.570796327</pose>
+      <parent>left_wing_link</parent><child>rotor_left_inner_link</child>
+      <axis>
+        <xyz expressed_in="rotor_left_inner_link">0 0 1</xyz>
+        <limit><effort>30</effort><velocity>1000</velocity></limit>
+        <dynamics><damping>0.00002</damping></dynamics>
+      </axis>
+    </joint>
+    <joint name="rotor_left_outer_joint" type="revolute">
+      <pose relative_to="left_wing_link">0.431334830 0.711747590 -0.064363363 1.570796327 0 1.570796327</pose>
+      <parent>left_wing_link</parent><child>rotor_left_outer_link</child>
+      <axis>
+        <xyz expressed_in="rotor_left_outer_link">0 0 1</xyz>
+        <limit><effort>30</effort><velocity>1000</velocity></limit>
+        <dynamics><damping>0.00002</damping></dynamics>
+      </axis>
+    </joint>
+    <joint name="rotor_right_inner_joint" type="revolute">
+      <pose relative_to="right_wing_link">0.431504890 -0.026649462 -0.059664586 1.570796327 0 1.570796327</pose>
+      <parent>right_wing_link</parent><child>rotor_right_inner_link</child>
+      <axis>
+        <xyz expressed_in="rotor_right_inner_link">0 0 1</xyz>
+        <limit><effort>30</effort><velocity>1000</velocity></limit>
+        <dynamics><damping>0.00002</damping></dynamics>
+      </axis>
+    </joint>
+    <joint name="rotor_right_outer_joint" type="revolute">
+      <pose relative_to="right_wing_link">0.431334674 -0.711747864 -0.064363093 1.570796327 0 1.570796327</pose>
+      <parent>right_wing_link</parent><child>rotor_right_outer_link</child>
+      <axis>
+        <xyz expressed_in="rotor_right_outer_link">0 0 1</xyz>
+        <limit><effort>30</effort><velocity>1000</velocity></limit>
+        <dynamics><damping>0.00002</damping></dynamics>
+      </axis>
+    </joint>
+
+    <joint name="left_inboard_aileron_joint" type="revolute">
+      <pose relative_to="left_wing_link">-0.18 0.43 0 0 0 0</pose>
+      <parent>left_wing_link</parent><child>left_inboard_aileron_link</child>
+      <axis>
+        <xyz expressed_in="left_wing_link">0 1 0</xyz>
+        <limit><lower>-0.4363</lower><upper>0.4363</upper><effort>20</effort><velocity>3</velocity></limit>
+        <dynamics><damping>0.12</damping></dynamics>
+      </axis>
+    </joint>
+    <joint name="left_outboard_aileron_joint" type="revolute">
+      <pose relative_to="left_wing_link">-0.16 1.14 0 0 0 0</pose>
+      <parent>left_wing_link</parent><child>left_outboard_aileron_link</child>
+      <axis>
+        <xyz expressed_in="left_wing_link">0 1 0</xyz>
+        <limit><lower>-0.4363</lower><upper>0.4363</upper><effort>20</effort><velocity>3</velocity></limit>
+        <dynamics><damping>0.12</damping></dynamics>
+      </axis>
+    </joint>
+    <joint name="right_inboard_aileron_joint" type="revolute">
+      <pose relative_to="right_wing_link">-0.18 -0.43 0 0 0 0</pose>
+      <parent>right_wing_link</parent><child>right_inboard_aileron_link</child>
+      <axis>
+        <xyz expressed_in="right_wing_link">0 1 0</xyz>
+        <limit><lower>-0.4363</lower><upper>0.4363</upper><effort>20</effort><velocity>3</velocity></limit>
+        <dynamics><damping>0.12</damping></dynamics>
+      </axis>
+    </joint>
+    <joint name="right_outboard_aileron_joint" type="revolute">
+      <pose relative_to="right_wing_link">-0.16 -1.14 0 0 0 0</pose>
+      <parent>right_wing_link</parent><child>right_outboard_aileron_link</child>
+      <axis>
+        <xyz expressed_in="right_wing_link">0 1 0</xyz>
+        <limit><lower>-0.4363</lower><upper>0.4363</upper><effort>20</effort><velocity>3</velocity></limit>
+        <dynamics><damping>0.12</damping></dynamics>
+      </axis>
+    </joint>
+
+    <joint name="left_ruddervator_joint" type="revolute">
+      <pose relative_to="base_link">-1.10 0.24 0.39 0.62 0 0</pose>
+      <parent>base_link</parent><child>left_ruddervator_link</child>
+      <axis>
+        <xyz expressed_in="left_ruddervator_link">0 1 0</xyz>
+        <limit><lower>-0.4363</lower><upper>0.4363</upper><effort>20</effort><velocity>3</velocity></limit>
+        <dynamics><damping>0.12</damping></dynamics>
+      </axis>
+    </joint>
+    <joint name="right_ruddervator_joint" type="revolute">
+      <pose relative_to="base_link">-1.10 -0.24 0.39 -0.62 0 0</pose>
+      <parent>base_link</parent><child>right_ruddervator_link</child>
+      <axis>
+        <xyz expressed_in="right_ruddervator_link">0 1 0</xyz>
+        <limit><lower>-0.4363</lower><upper>0.4363</upper><effort>20</effort><velocity>3</velocity></limit>
+        <dynamics><damping>0.12</damping></dynamics>
+      </axis>
+    </joint>
+
+    <plugin filename="gz-sim-joint-state-publisher-system"
+      name="gz::sim::systems::JointStatePublisher"/>
+
+    <!-- Fold controllers. The command value is joint angle in radians. -->
+    <plugin filename="gz-sim-joint-position-controller-system"
+      name="gz::sim::systems::JointPositionController">
+      <joint_name>left_fold_joint</joint_name>
+      <topic>/p4/fold_left_cmd</topic>
+      <initial_position>0</initial_position>
+      <p_gain>2500</p_gain><i_gain>2.0</i_gain><d_gain>200</d_gain>
+      <i_max>200</i_max><i_min>-200</i_min>
+      <cmd_max>2000</cmd_max><cmd_min>-2000</cmd_min>
+    </plugin>
+    <plugin filename="gz-sim-joint-position-controller-system"
+      name="gz::sim::systems::JointPositionController">
+      <joint_name>right_fold_joint</joint_name>
+      <topic>/p4/fold_right_cmd</topic>
+      <initial_position>0</initial_position>
+      <p_gain>2500</p_gain><i_gain>2.0</i_gain><d_gain>200</d_gain>
+      <i_max>200</i_max><i_min>-200</i_min>
+      <cmd_max>2000</cmd_max><cmd_min>-2000</cmd_min>
+    </plugin>
+
+    <!-- Four aileron position controllers. -->
+    <plugin filename="gz-sim-joint-position-controller-system"
+      name="gz::sim::systems::JointPositionController">
+      <joint_name>left_inboard_aileron_joint</joint_name>
+      <topic>/p4/aileron_left_inboard_cmd</topic>
+      <p_gain>1.5</p_gain><d_gain>0.06</d_gain><cmd_max>2</cmd_max><cmd_min>-2</cmd_min>
+    </plugin>
+    <plugin filename="gz-sim-joint-position-controller-system"
+      name="gz::sim::systems::JointPositionController">
+      <joint_name>left_outboard_aileron_joint</joint_name>
+      <topic>/p4/aileron_left_outboard_cmd</topic>
+      <p_gain>1.5</p_gain><d_gain>0.06</d_gain><cmd_max>2</cmd_max><cmd_min>-2</cmd_min>
+    </plugin>
+    <plugin filename="gz-sim-joint-position-controller-system"
+      name="gz::sim::systems::JointPositionController">
+      <joint_name>right_inboard_aileron_joint</joint_name>
+      <topic>/p4/aileron_right_inboard_cmd</topic>
+      <p_gain>1.5</p_gain><d_gain>0.06</d_gain><cmd_max>2</cmd_max><cmd_min>-2</cmd_min>
+    </plugin>
+    <plugin filename="gz-sim-joint-position-controller-system"
+      name="gz::sim::systems::JointPositionController">
+      <joint_name>right_outboard_aileron_joint</joint_name>
+      <topic>/p4/aileron_right_outboard_cmd</topic>
+      <p_gain>1.5</p_gain><d_gain>0.06</d_gain><cmd_max>2</cmd_max><cmd_min>-2</cmd_min>
+    </plugin>
+
+    <plugin filename="gz-sim-joint-position-controller-system"
+      name="gz::sim::systems::JointPositionController">
+      <joint_name>left_ruddervator_joint</joint_name>
+      <topic>/p4/ruddervator_left_cmd</topic>
+      <p_gain>2.0</p_gain><d_gain>0.10</d_gain><cmd_max>3</cmd_max><cmd_min>-3</cmd_min>
+    </plugin>
+    <plugin filename="gz-sim-joint-position-controller-system"
+      name="gz::sim::systems::JointPositionController">
+      <joint_name>right_ruddervator_joint</joint_name>
+      <topic>/p4/ruddervator_right_cmd</topic>
+      <p_gain>2.0</p_gain><d_gain>0.10</d_gain><cmd_max>3</cmd_max><cmd_min>-3</cmd_min>
+    </plugin>
+
+    <!--
+      Rotor estimate: 2.8e-4 N/(rad/s)^2. Equal-share MTOW hover would be
+      about 595 rad/s. The provided open-loop hover command uses the estimated
+      CG trim plus roughly 10 percent thrust reserve: 500 rad/s inner and
+      730 rad/s outer.
+    -->
+    <plugin filename="gz-sim-multicopter-motor-model-system"
+      name="gz::sim::systems::MulticopterMotorModel">
+      <robotNamespace>p4</robotNamespace>
+      <jointName>rotor_right_inner_joint</jointName>
+      <linkName>rotor_right_inner_link</linkName>
+      <turningDirection>ccw</turningDirection>
+      <timeConstantUp>0.08</timeConstantUp><timeConstantDown>0.12</timeConstantDown>
+      <maxRotVelocity>733.04</maxRotVelocity>
+      <motorConstant>2.8e-4</motorConstant><momentConstant>0.035</momentConstant>
+      <commandSubTopic>command/motor_speed</commandSubTopic><actuator_number>0</actuator_number>
+      <rotorDragCoefficient>1.0e-4</rotorDragCoefficient>
+      <rollingMomentCoefficient>1.0e-6</rollingMomentCoefficient>
+      <motorSpeedPubTopic>motor_speed/0</motorSpeedPubTopic>
+      <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim><motorType>velocity</motorType>
+    </plugin>
+    <plugin filename="gz-sim-multicopter-motor-model-system"
+      name="gz::sim::systems::MulticopterMotorModel">
+      <robotNamespace>p4</robotNamespace>
+      <jointName>rotor_right_outer_joint</jointName>
+      <linkName>rotor_right_outer_link</linkName>
+      <turningDirection>cw</turningDirection>
+      <timeConstantUp>0.08</timeConstantUp><timeConstantDown>0.12</timeConstantDown>
+      <maxRotVelocity>733.04</maxRotVelocity>
+      <motorConstant>2.8e-4</motorConstant><momentConstant>0.035</momentConstant>
+      <commandSubTopic>command/motor_speed</commandSubTopic><actuator_number>1</actuator_number>
+      <rotorDragCoefficient>1.0e-4</rotorDragCoefficient>
+      <rollingMomentCoefficient>1.0e-6</rollingMomentCoefficient>
+      <motorSpeedPubTopic>motor_speed/1</motorSpeedPubTopic>
+      <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim><motorType>velocity</motorType>
+    </plugin>
+    <plugin filename="gz-sim-multicopter-motor-model-system"
+      name="gz::sim::systems::MulticopterMotorModel">
+      <robotNamespace>p4</robotNamespace>
+      <jointName>rotor_left_outer_joint</jointName>
+      <linkName>rotor_left_outer_link</linkName>
+      <turningDirection>ccw</turningDirection>
+      <timeConstantUp>0.08</timeConstantUp><timeConstantDown>0.12</timeConstantDown>
+      <maxRotVelocity>733.04</maxRotVelocity>
+      <motorConstant>2.8e-4</motorConstant><momentConstant>0.035</momentConstant>
+      <commandSubTopic>command/motor_speed</commandSubTopic><actuator_number>2</actuator_number>
+      <rotorDragCoefficient>1.0e-4</rotorDragCoefficient>
+      <rollingMomentCoefficient>1.0e-6</rollingMomentCoefficient>
+      <motorSpeedPubTopic>motor_speed/2</motorSpeedPubTopic>
+      <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim><motorType>velocity</motorType>
+    </plugin>
+    <plugin filename="gz-sim-multicopter-motor-model-system"
+      name="gz::sim::systems::MulticopterMotorModel">
+      <robotNamespace>p4</robotNamespace>
+      <jointName>rotor_left_inner_joint</jointName>
+      <linkName>rotor_left_inner_link</linkName>
+      <turningDirection>cw</turningDirection>
+      <timeConstantUp>0.08</timeConstantUp><timeConstantDown>0.12</timeConstantDown>
+      <maxRotVelocity>733.04</maxRotVelocity>
+      <motorConstant>2.8e-4</motorConstant><momentConstant>0.035</momentConstant>
+      <commandSubTopic>command/motor_speed</commandSubTopic><actuator_number>3</actuator_number>
+      <rotorDragCoefficient>1.0e-4</rotorDragCoefficient>
+      <rollingMomentCoefficient>1.0e-6</rollingMomentCoefficient>
+      <motorSpeedPubTopic>motor_speed/3</motorSpeedPubTopic>
+      <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim><motorType>velocity</motorType>
+    </plugin>
+
+    <!-- Estimated main-wing aerodynamics: 0.64 m^2 excluding ailerons. -->
+    <plugin filename="gz-sim-lift-drag-system" name="gz::sim::systems::LiftDrag">
+      <a0>0.14</a0><cla>5.70</cla><cda>0.035</cda><cma>-0.05</cma>
+      <alpha_stall>0.28</alpha_stall><cla_stall>-3.0</cla_stall>
+      <cda_stall>1.20</cda_stall><cma_stall>0.0</cma_stall>
+      <!-- cp is relative to this link's inertial CoG, not its frame origin. -->
+      <cp>-0.13 0 0.03</cp><area>0.32</area><air_density>1.2041</air_density>
+      <forward>1 0 0</forward><upward>0 0 1</upward><link_name>left_wing_link</link_name>
+    </plugin>
+    <plugin filename="gz-sim-lift-drag-system" name="gz::sim::systems::LiftDrag">
+      <a0>0.14</a0><cla>5.70</cla><cda>0.035</cda><cma>-0.05</cma>
+      <alpha_stall>0.28</alpha_stall><cla_stall>-3.0</cla_stall>
+      <cda_stall>1.20</cda_stall><cma_stall>0.0</cma_stall>
+      <cp>-0.13 0 0.03</cp><area>0.32</area><air_density>1.2041</air_density>
+      <forward>1 0 0</forward><upward>0 0 1</upward><link_name>right_wing_link</link_name>
+    </plugin>
+
+    <!-- 4 x 0.049 m^2 plus the main panels reproduces 0.836 m^2 total. -->
+    <plugin filename="gz-sim-lift-drag-system" name="gz::sim::systems::LiftDrag">
+      <a0>0.14</a0><cla>5.4</cla><cda>0.04</cda><cma>-0.03</cma>
+      <alpha_stall>0.28</alpha_stall><cla_stall>-3.0</cla_stall><cda_stall>1.2</cda_stall>
+      <cp>0 0 0</cp><area>0.049</area><air_density>1.2041</air_density>
+      <forward>1 0 0</forward><upward>0 0 1</upward><link_name>left_inboard_aileron_link</link_name>
+    </plugin>
+    <plugin filename="gz-sim-lift-drag-system" name="gz::sim::systems::LiftDrag">
+      <a0>0.14</a0><cla>5.4</cla><cda>0.04</cda><cma>-0.03</cma>
+      <alpha_stall>0.28</alpha_stall><cla_stall>-3.0</cla_stall><cda_stall>1.2</cda_stall>
+      <cp>0 0 0</cp><area>0.049</area><air_density>1.2041</air_density>
+      <forward>1 0 0</forward><upward>0 0 1</upward><link_name>left_outboard_aileron_link</link_name>
+    </plugin>
+    <plugin filename="gz-sim-lift-drag-system" name="gz::sim::systems::LiftDrag">
+      <a0>0.14</a0><cla>5.4</cla><cda>0.04</cda><cma>-0.03</cma>
+      <alpha_stall>0.28</alpha_stall><cla_stall>-3.0</cla_stall><cda_stall>1.2</cda_stall>
+      <cp>0 0 0</cp><area>0.049</area><air_density>1.2041</air_density>
+      <forward>1 0 0</forward><upward>0 0 1</upward><link_name>right_inboard_aileron_link</link_name>
+    </plugin>
+    <plugin filename="gz-sim-lift-drag-system" name="gz::sim::systems::LiftDrag">
+      <a0>0.14</a0><cla>5.4</cla><cda>0.04</cda><cma>-0.03</cma>
+      <alpha_stall>0.28</alpha_stall><cla_stall>-3.0</cla_stall><cda_stall>1.2</cda_stall>
+      <cp>0 0 0</cp><area>0.049</area><air_density>1.2041</air_density>
+      <forward>1 0 0</forward><upward>0 0 1</upward><link_name>right_outboard_aileron_link</link_name>
+    </plugin>
+
+    <!--
+      Symmetric NACA0012-like V-tail estimate. The 0.2448 m^2 effective area
+      per side matches the 0.72 x 0.34 m collision-panel footprint and
+      supplies transition pitch authority in the coupled SITL derivative.
+    -->
+    <plugin filename="gz-sim-lift-drag-system" name="gz::sim::systems::LiftDrag">
+      <a0>0</a0><cla>4.5</cla><cda>0.025</cda><cma>-0.02</cma>
+      <alpha_stall>0.25</alpha_stall><cla_stall>-2.8</cla_stall><cda_stall>1.1</cda_stall>
+      <cp>0 0 0</cp><area>0.2448</area><air_density>1.2041</air_density>
+      <forward>1 0 0</forward><upward>0 0 1</upward><link_name>left_ruddervator_link</link_name>
+    </plugin>
+    <plugin filename="gz-sim-lift-drag-system" name="gz::sim::systems::LiftDrag">
+      <a0>0</a0><cla>4.5</cla><cda>0.025</cda><cma>-0.02</cma>
+      <alpha_stall>0.25</alpha_stall><cla_stall>-2.8</cla_stall><cda_stall>1.1</cda_stall>
+      <cp>0 0 0</cp><area>0.2448</area><air_density>1.2041</air_density>
+      <forward>1 0 0</forward><upward>0 0 1</upward><link_name>right_ruddervator_link</link_name>
+    </plugin>
+  </model>
+</sdf>

@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+<sdf version="1.9">
+  <model name="transwing_surrogate_articulation">
+    <include>
+      <uri>model://transwing_surrogate</uri>
+      <name>transwing_surrogate</name>
+    </include>
+
+    <plugin filename="gz-sim-joint-position-controller-system"
+      name="gz::sim::systems::JointPositionController">
+      <joint_name>transwing_surrogate::left_fold_joint</joint_name>
+      <topic>/transwing/fold_left_cmd</topic>
+      <p_gain>30</p_gain>
+      <i_gain>0.2</i_gain>
+      <d_gain>5</d_gain>
+      <i_max>5</i_max>
+      <i_min>-5</i_min>
+      <cmd_max>60</cmd_max>
+      <cmd_min>-60</cmd_min>
+    </plugin>
+
+    <plugin filename="gz-sim-joint-position-controller-system"
+      name="gz::sim::systems::JointPositionController">
+      <joint_name>transwing_surrogate::right_fold_joint</joint_name>
+      <topic>/transwing/fold_right_cmd</topic>
+      <p_gain>30</p_gain>
+      <i_gain>0.2</i_gain>
+      <d_gain>5</d_gain>
+      <i_max>5</i_max>
+      <i_min>-5</i_min>
+      <cmd_max>60</cmd_max>
+      <cmd_min>-60</cmd_min>
+    </plugin>
+
+    <plugin filename="gz-sim-joint-position-controller-system"
+      name="gz::sim::systems::JointPositionController">
+      <joint_name>transwing_surrogate::left_aileron_joint</joint_name>
+      <topic>/transwing/aileron_left_cmd</topic>
+      <p_gain>8</p_gain>
+      <d_gain>0.25</d_gain>
+      <cmd_max>8</cmd_max>
+      <cmd_min>-8</cmd_min>
+    </plugin>
+
+    <plugin filename="gz-sim-joint-position-controller-system"
+      name="gz::sim::systems::JointPositionController">
+      <joint_name>transwing_surrogate::right_aileron_joint</joint_name>
+      <topic>/transwing/aileron_right_cmd</topic>
+      <p_gain>8</p_gain>
+      <d_gain>0.25</d_gain>
+      <cmd_max>8</cmd_max>
+      <cmd_min>-8</cmd_min>
+    </plugin>
+
+    <plugin filename="gz-sim-joint-position-controller-system"
+      name="gz::sim::systems::JointPositionController">
+      <joint_name>transwing_surrogate::elevator_joint</joint_name>
+      <topic>/transwing/elevator_cmd</topic>
+      <p_gain>8</p_gain>
+      <d_gain>0.25</d_gain>
+      <cmd_max>8</cmd_max>
+      <cmd_min>-8</cmd_min>
+    </plugin>
+
+    <plugin filename="gz-sim-joint-position-controller-system"
+      name="gz::sim::systems::JointPositionController">
+      <joint_name>transwing_surrogate::rudder_joint</joint_name>
+      <topic>/transwing/rudder_cmd</topic>
+      <p_gain>8</p_gain>
+      <d_gain>0.25</d_gain>
+      <cmd_max>8</cmd_max>
+      <cmd_min>-8</cmd_min>
+    </plugin>
+  </model>
+</sdf>

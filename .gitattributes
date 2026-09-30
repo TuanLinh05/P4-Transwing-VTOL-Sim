@@ -1,0 +1,10 @@
+* text=auto
+# Shell scripts run inside WSL: always LF
+*.sh text eol=lf
+*.py text eol=lf
+*.param text eol=lf
+*.waypoints text eol=lf
+# Windows launchers
+*.cmd text eol=crlf
+*.bat text eol=crlf
+*.ps1 text eol=crlf

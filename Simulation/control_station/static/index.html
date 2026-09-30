@@ -1,0 +1,858 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#071018" />
+    <title>P4 Transwing Control Station</title>
+    <link rel="stylesheet" href="/vendor/leaflet/leaflet.css" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div id="disconnect-banner" class="disconnect-banner hidden" role="alert"></div>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 52 52">
+              <path d="M5 27 22 21 26 6l4 15 17 6-17 4-4 15-4-15Z" />
+              <circle cx="26" cy="27" r="4" />
+            </svg>
+          </div>
+          <div>
+            <div class="eyebrow">VTOL SIMULATION LAB</div>
+            <h1>P4 Transwing Control Station</h1>
+          </div>
+        </div>
+
+        <div class="top-status indicator-bar">
+          <div class="indicator" id="sim-indicator">
+            <span class="status-dot" id="sim-dot"></span>
+            <span class="ind-label">SIM</span>
+            <strong class="ind-value" id="sim-status">Đã dừng</strong>
+          </div>
+          <div class="indicator" id="link-indicator">
+            <span class="status-dot" id="link-dot"></span>
+            <span class="ind-label">LINK</span>
+            <strong class="ind-value" id="link-status">Chưa có MAVLink</strong>
+          </div>
+          <div class="indicator" id="gps-indicator">
+            <span class="status-dot" id="gps-dot"></span>
+            <span class="ind-label">GPS</span>
+            <strong class="ind-value" id="ind-gps-value">--</strong>
+          </div>
+          <div class="indicator" id="batt-indicator">
+            <span class="status-dot" id="batt-dot"></span>
+            <span class="ind-label">BATT</span>
+            <strong class="ind-value" id="ind-battery-value">--</strong>
+          </div>
+          <div class="indicator" id="external-rc-indicator" title="MKR WiFi 1010 / FlySky iBUS">
+            <span class="status-dot" id="external-rc-dot"></span>
+            <span class="ind-label">RC USB</span>
+            <strong class="ind-value" id="external-rc-status">Waiting for MKR</strong>
+          </div>
+          <div class="indicator-mode" id="vehicle-mode">UNKNOWN</div>
+          <div class="arm-state" id="arm-state">DISARMED</div>
+          <time id="clock">--:--:--</time>
+        </div>
+      </header>
+
+      <nav class="tabs-nav" role="tablist">
+        <button class="tab-btn active" data-target="tab-control" role="tab" aria-selected="true" aria-controls="tab-control">Điều khiển bay</button>
+        <button class="tab-btn" data-target="tab-mission" role="tab" aria-selected="false" aria-controls="tab-mission">Bay tự động</button>
+        <button class="tab-btn" data-target="tab-experiments" role="tab"
+          aria-selected="false" aria-controls="tab-experiments" disabled
+          title="Khóa cho đến khi hệ số khí động học và transition P4 được nhận dạng">
+          Thí nghiệm · khóa
+        </button>
+      </nav>
+
+      <div id="tab-control" class="tab-content active" role="tabpanel">
+        <main class="dashboard-grid control-grid">
+<aside class="control-rail">
+          <section class="panel startup-panel">
+            <div class="panel-heading">
+              <div>
+                <span class="section-index">01</span>
+                <h2>Khởi động mô phỏng</h2>
+              </div>
+              <span class="mini-badge" id="stack-badge">OFFLINE</span>
+            </div>
+
+            <div class="segmented" role="group" aria-label="Nguồn môi trường">
+              <button class="segment active" data-environment="fixed">
+                Test case
+              </button>
+              <button class="segment" data-environment="live" disabled
+                title="Chưa mở cho đến khi hệ số khí động học P4 được nhận dạng">
+                Thời tiết live · khóa
+              </button>
+            </div>
+
+            <div id="fixed-options">
+              <label class="field-label" for="case-select">Cấu hình thử nghiệm</label>
+              <select id="case-select" class="control-input"></select>
+              <p class="field-help" id="case-description">Đang tải cấu hình…</p>
+              <p class="field-help">
+                Chỉ baseline được bật. ARM, cất cánh và AUTO vẫn là thử nghiệm
+                mô phỏng; cần kiểm tra chiều actuator ở trạng thái DISARMED trước.
+              </p>
+            </div>
+
+            <div id="live-options" class="hidden">
+              <div class="field-row">
+                <label>
+                  <span class="field-label">Tải trọng</span>
+                  <span class="input-with-unit">
+                    <input
+                      id="payload-input"
+                      class="control-input"
+                      type="number"
+                      min="0"
+                      max="1.5"
+                      step="0.05"
+                      value="0"
+                    />
+                    <span>kg</span>
+                  </span>
+                </label>
+                <label>
+                  <span class="field-label">Mô hình gió</span>
+                  <select id="wind-mode" class="control-input">
+                    <option value="sustained">Duy trì</option>
+                    <option value="gust">Gió giật</option>
+                  </select>
+                </label>
+              </div>
+              <p class="field-help">
+                Lấy snapshot Open-Meteo tại Home trước khi chạy.
+              </p>
+            </div>
+
+            <label class="switch-row">
+              <input id="open-mission-planner" type="checkbox" checked />
+              <span class="switch"></span>
+              <span>Tự mở Mission Planner</span>
+            </label>
+
+            <div class="button-row">
+              <button id="start-button" class="button primary wide">
+                <span class="button-icon">▶</span>
+                START ALL
+              </button>
+              <button id="stop-button" class="button danger ghost" disabled>
+                ■ STOP
+              </button>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-heading">
+              <div>
+                <span class="section-index">02</span>
+                <h2>Trạng thái & an toàn</h2>
+              </div>
+            </div>
+
+            <div class="safety-actions">
+              <button id="arm-button" class="button arm" disabled>
+                ARM
+              </button>
+              <button id="disarm-button" class="button disarm" disabled>
+                DISARM
+              </button>
+            </div>
+
+            <div class="takeoff-grid">
+              <label>
+                <span class="field-label">Độ cao cất cánh</span>
+                <span class="input-with-unit">
+                  <input
+                    id="takeoff-altitude"
+                    class="control-input"
+                    type="number"
+                    min="3"
+                    max="120"
+                    step="1"
+                    value="20"
+                  />
+                  <span>m</span>
+                </span>
+              </label>
+              <button id="takeoff-button" class="button accent" disabled>
+                CẤT CÁNH
+              </button>
+            </div>
+
+            <div id="flight-action-status" class="flight-action-status idle">
+              <i></i>
+              <span>Chưa có tác vụ bay đang chạy</span>
+            </div>
+
+            <div class="button-row three">
+              <button id="qland-button" class="button soft" disabled>
+                QLAND
+              </button>
+              <button id="rtl-button" class="button soft" disabled>RTL</button>
+              <button id="abort-button" class="button warning" disabled>
+                ABORT
+              </button>
+            </div>
+            <p class="field-help">
+              ABORT đưa máy bay về QLOITER, cân giữa RC và throttle 1500.
+            </p>
+
+            <div class="takeoff-grid">
+              <div>
+                <span class="field-label">Chuyển tiếp VTOL → cánh bằng</span>
+                <strong>FBWB · RC3 1750</strong>
+              </div>
+              <button id="transition-fw-button" class="button accent" disabled>
+                CHUYỂN CÁNH BẰNG
+              </button>
+            </div>
+            <p class="field-help">
+              Chỉ mở khi đang ARM, QLOITER, cao tối thiểu 25 m và thân cân bằng
+              trong ±10°. Dashboard tự ABORT về QLOITER nếu mất quá 15 m độ cao
+              hoặc tư thế vượt giới hạn.
+            </p>
+
+            <div class="takeoff-grid">
+              <label>
+                <span class="field-label">Độ cao mục tiêu (FBWB)</span>
+                <span class="input-with-unit">
+                  <input
+                    id="climb-altitude"
+                    class="control-input"
+                    type="number"
+                    min="3"
+                    max="150"
+                    step="1"
+                    value="50"
+                  />
+                  <span>m</span>
+                </span>
+              </label>
+              <button id="climb-button" class="button accent" disabled>
+                TỰ ĐỘNG LEO/HẠ
+              </button>
+            </div>
+            <p class="field-help">
+              Chỉ hoạt động khi đang ở mode FBWB — dashboard tự giữ cần pitch (RC2)
+              hộ bạn tới khi đạt độ cao, sau đó thả về giữa để FBWB tự giữ nguyên.
+            </p>
+          </section>
+
+          
+          <section class="panel">
+            <div class="panel-heading">
+              <h2>Pre-arm checklist</h2>
+              <span class="badge" id="checklist-count">0 mục</span>
+            </div>
+            <div class="checklist" id="prearm-checklist">
+              <div class="checklist-item watch"><span class="mark">–</span><span>Chưa kết nối</span></div>
+            </div>
+          </section>
+
+          <section class="panel compact">
+            <div class="panel-heading">
+              <div>
+                <span class="section-index">03</span>
+                <h2>Flight mode</h2>
+              </div>
+            </div>
+            <div class="mode-grid" id="mode-grid">
+              <button data-mode="QLOITER">QLOITER</button>
+              <button data-mode="QHOVER">QHOVER</button>
+              <button data-mode="FBWA">FBWA</button>
+              <button data-mode="FBWB">FBWB</button>
+              <button data-mode="AUTO">AUTO</button>
+              <button data-mode="RTL">RTL</button>
+              <button data-mode="QLAND">QLAND</button>
+              <button data-mode="MANUAL">MANUAL</button>
+              <button data-mode="LOITER">LOITER</button>
+              <button data-mode="QSTABILIZE">QSTAB</button>
+              <button data-mode="QRTL">QRTL</button>
+            </div>
+          </section>
+
+          <section class="panel rc-panel">
+            <div class="panel-heading">
+              <div>
+                <span class="section-index">04</span>
+                <h2>RC Override</h2>
+                <span class="rc-owner-chip" id="rc-owner-chip">RC: --</span>
+              </div>
+              <button id="center-rc-button" class="text-button" disabled>
+                Cân giữa
+              </button>
+            </div>
+
+            <div class="slider-control">
+              <div class="slider-meta">
+                <label for="roll-slider">Roll · RC1</label>
+                <output id="roll-output">1500</output>
+              </div>
+              <input
+                id="roll-slider"
+                type="range"
+                min="1000"
+                max="2000"
+                step="5"
+                value="1500"
+                data-channel="1"
+              />
+            </div>
+
+            <div class="slider-control">
+              <div class="slider-meta">
+                <label for="pitch-slider">Pitch · RC2</label>
+                <output id="pitch-output">1500</output>
+              </div>
+              <input
+                id="pitch-slider"
+                type="range"
+                min="1000"
+                max="2000"
+                step="5"
+                value="1500"
+                data-channel="2"
+              />
+            </div>
+
+            <div class="slider-control throttle-control">
+              <div class="slider-meta">
+                <label for="throttle-slider">Throttle · RC3</label>
+                <output id="throttle-output">1000</output>
+              </div>
+              <input
+                id="throttle-slider"
+                type="range"
+                min="500"
+                max="2000"
+                step="10"
+                value="1000"
+                data-channel="3"
+              />
+              <div class="range-labels">
+                <span>CUT 500</span><span>HOLD 1500</span><span>MAX 2000</span>
+              </div>
+            </div>
+
+            <div class="slider-control">
+              <div class="slider-meta">
+                <label for="yaw-slider">Yaw · RC4</label>
+                <output id="yaw-output">1500</output>
+              </div>
+              <input
+                id="yaw-slider"
+                type="range"
+                min="1000"
+                max="2000"
+                step="5"
+                value="1500"
+                data-channel="4"
+              />
+            </div>
+
+            <button id="release-rc-button" class="button warning wide" disabled>
+              Trả quyền RC cho autopilot
+            </button>
+          </section>
+
+          <section class="panel external-rc-panel" aria-labelledby="external-rc-heading">
+            <div class="panel-heading">
+              <div>
+                <span class="section-index">05</span>
+                <h2 id="external-rc-heading">Tay điều khiển ngoài</h2>
+                <span class="rc-owner-chip" id="external-rc-chip">MKR: chờ frame</span>
+              </div>
+            </div>
+
+            <p class="field-help" id="external-rc-message">
+              Cắm MKR, chạy USB bridge trên Windows rồi chờ frame P4RC hợp lệ.
+              Radio chỉ được trao quyền sau khi bạn kiểm tra stick ở vị trí an toàn.
+            </p>
+
+            <div class="external-rc-meta" aria-live="polite">
+              <div><span>Protocol</span><strong id="external-rc-protocol">P4RC/1</strong></div>
+              <div><span>Sequence</span><strong id="external-rc-sequence">--</strong></div>
+              <div><span>Frame age</span><strong id="external-rc-age">--</strong></div>
+              <div><span>CH7 SWA ARM</span><strong id="external-rc-arm-switch">--</strong></div>
+              <div><span>CH8 SWB QRTL</span><strong id="external-rc-qrtl-switch">--</strong></div>
+              <div><span>CH9 SWC MODE</span><strong id="external-rc-mode-switch">--</strong></div>
+            </div>
+
+            <div class="external-channel-grid" aria-label="Kênh iBUS nhận từ tay điều khiển">
+              <div><span>CH1 Roll</span><output id="external-ch1">--</output></div>
+              <div><span>CH2 Pitch</span><output id="external-ch2">--</output></div>
+              <div><span>CH3 Thr</span><output id="external-ch3">--</output></div>
+              <div><span>CH4 Yaw</span><output id="external-ch4">--</output></div>
+              <div><span>CH5 Aux</span><output id="external-ch5">--</output></div>
+              <div><span>CH6 Aux</span><output id="external-ch6">--</output></div>
+              <div><span>CH7 SWA ARM</span><output id="external-ch7">--</output></div>
+              <div><span>CH8 SWB QRTL</span><output id="external-ch8">--</output></div>
+              <div><span>CH9 SWC MODE</span><output id="external-ch9">--</output></div>
+              <div><span>CH10 Spare</span><output id="external-ch10">--</output></div>
+            </div>
+
+            <div class="external-rc-actions">
+              <button id="external-rc-enable-button" class="button accent" disabled>
+                TRAO QUYỀN RADIO
+              </button>
+              <button id="external-rc-disable-button" class="button warning" disabled>
+                NGẮT / GIỮ TRUNG TÍNH
+              </button>
+            </div>
+            <p class="field-help safety-note">
+              <strong>QLOITER safety:</strong> RC1/RC2 are limited and smoothed. If tilt or angular rate becomes excessive,
+              HOVER RECOVERY holds neutral RC and blocks the fixed-wing transition until the aircraft is calm.
+              <br>
+              CH7/SWA LOW–HIGH điều khiển DISARM–ARM (CH3 phải LOW khi ARM);
+              không disarm giữa chuyến bay. CH8/SWB HIGH yêu cầu QRTL.
+              CH9/SWC: LOW = QLOITER, MID = chuyển tiếp an toàn, HIGH = FBWB cánh bằng.
+              Mất frame quá 750 ms sẽ giữ RC trung tính và yêu cầu QLOITER.
+            </p>
+          </section>
+        </aside>
+
+          <section class="mission-workspace control-map-workspace">
+            <section class="panel map-panel">
+              <div class="panel-heading map-heading">
+                <div>
+                  <span class="section-index">05</span>
+                  <h2>Bản đồ giám sát</h2>
+                </div>
+                <div class="map-tools">
+                  <span id="map-control-status" class="map-status loading">Map loading</span>
+                  <button id="center-map-control-button" class="text-button">Theo drone</button>
+                </div>
+              </div>
+              <div id="map-control" class="map-container">
+                <div class="map-loading">
+                  <div class="spinner"></div>
+                  Đang khởi tạo bản đồ…
+                </div>
+              </div>
+              <div class="map-overlay">
+                <span><i class="legend-dot drone"></i> Drone</span>
+                <span><i class="legend-line"></i> Đường bay</span>
+              </div>
+                            <div class="pfd">
+                <div class="pfd-compass">
+                  <div class="pfd-compass-track" id="pfd-compass-track"></div>
+                </div>
+                <div class="pfd-main">
+                  <div class="pfd-tape"><span class="tape-value" id="pfd-speed">0.0</span><span class="tape-unit">m/s</span></div>
+                  <div class="pfd-ball-frame">
+                    <div class="pfd-ball" id="horizon-world" style="--roll:0deg; --pitch:0px;">
+                      <div class="pfd-sky"></div>
+                      <div class="pfd-ground"></div>
+                      <div class="pfd-horizon-line"></div>
+                      <div class="pfd-ladder">
+                        <span style="top:calc(50% - 46px)">20</span>
+                        <span style="top:calc(50% - 23px)">10</span>
+                        <span style="top:calc(50% + 21px)">10</span>
+                        <span style="top:calc(50% + 44px)">20</span>
+                      </div>
+                    </div>
+                    <div class="pfd-aircraft"><i></i><b></b><i></i></div>
+                    <div class="pfd-bank-pointer"></div>
+                  </div>
+                  <div class="pfd-tape"><span class="tape-value" id="pfd-alt">0.0</span><span class="tape-unit">m AGL</span></div>
+                </div>
+                <div class="pfd-readout">
+                  <span>ROLL <strong id="roll-value">0.0°</strong></span>
+                  <span>PITCH <strong id="pitch-value">0.0°</strong></span>
+                  <span>YAW <strong id="yaw-value">0.0°</strong></span>
+                  <span>HDG <strong id="heading-value">0°</strong></span>
+                </div>
+              </div>
+              <div class="guided-fab">
+                <button class="fab-btn" data-fab="takeoff" disabled>TAKEOFF</button>
+                <button class="fab-btn warn" data-fab="rtl" disabled>RTL</button>
+                <button class="fab-btn warn" data-fab="qland" disabled>QLAND</button>
+                <button class="fab-btn critical" data-fab="abort" disabled>ABORT</button>
+                <button class="fab-btn critical" data-fab="disarm" disabled>DISARM</button>
+              </div>
+            </section>
+          </section>
+
+<aside class="telemetry-rail">
+
+          <section class="metric-grid">
+            <article class="metric-card">
+              <span>ĐỘ CAO AGL</span>
+              <strong id="altitude-value">0.0</strong>
+              <small>m</small>
+              <div class="metric-trend" id="climb-value">VS 0.0 m/s</div>
+            </article>
+            <article class="metric-card">
+              <span>GROUNDSPEED</span>
+              <strong id="groundspeed-value">0.0</strong>
+              <small>m/s</small>
+              <div class="metric-trend" id="airspeed-value">AS 0.0 m/s</div>
+            </article>
+            <article class="metric-card">
+              <span>THROTTLE</span>
+              <strong id="hud-throttle-value">0</strong>
+              <small>%</small>
+              <div class="meter"><i id="throttle-meter"></i></div>
+            </article>
+            <article class="metric-card">
+              <span>BATTERY</span>
+              <strong id="battery-value">--</strong>
+              <small>V</small>
+              <div class="metric-trend" id="battery-remaining">Chưa mô hình</div>
+            </article>
+          </section>
+
+          <section class="panel telemetry-panel">
+            <div class="panel-heading">
+              <div>
+                <span class="section-index">08</span>
+                <h2>Telemetry</h2>
+              </div>
+            </div>
+            <dl class="telemetry-list">
+              <div><dt>Latitude</dt><dd id="latitude-value">--</dd></div>
+              <div><dt>Longitude</dt><dd id="longitude-value">--</dd></div>
+              <div><dt>Altitude MSL</dt><dd id="alt-msl-value">--</dd></div>
+              <div><dt>GPS fix / sats</dt><dd id="gps-value">--</dd></div>
+              <div><dt>HDOP</dt><dd id="hdop-value">--</dd></div>
+              <div><dt>MAVLink age</dt><dd id="heartbeat-value">--</dd></div>
+              <div><dt>Dist to Home</dt><dd id="dist-home-value">--</dd></div>
+            </dl>
+          </section>
+
+          <section class="panel process-panel">
+            <div class="panel-heading">
+              <div>
+                <span class="section-index">09</span>
+                <h2>Tiến trình hệ thống</h2>
+              </div>
+            </div>
+            <div id="process-list" class="process-list">
+              <div class="process-item">
+                <i></i><span>Chưa khởi động tiến trình</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel flight-log-panel">
+            <div class="panel-heading">
+              <div>
+                <h2>Flight logs (SITL)</h2>
+              </div>
+              <button id="refresh-flight-logs" class="text-button">Làm mới</button>
+            </div>
+            <p class="field-help">
+              Dataflash .BIN do ArduPilot SITL tự ghi mỗi phiên bay — dùng để phân tích
+              sau khi rớt/gặp sự cố, không cần bật gì thêm.
+            </p>
+            <div id="flight-log-list" class="flight-log-list">
+              <div class="empty-message">Đang tải danh sách log…</div>
+            </div>
+          </section>
+
+          <section class="panel alerts-panel">
+            <div class="panel-heading">
+              <div>
+                <span class="section-index">10</span>
+                <h2>Thông báo FC</h2>
+              </div>
+            </div>
+            <div id="status-messages" class="status-messages">
+              <div class="empty-message">Chưa có STATUSTEXT.</div>
+            </div>
+          </section>
+        </aside>
+<section class="panel log-panel">
+          <div class="panel-heading">
+            <div>
+              <span class="section-index">11</span>
+              <h2>System log</h2>
+            </div>
+            <div class="log-actions">
+              <label class="switch-row tiny">
+                <input id="auto-scroll-log" type="checkbox" checked />
+                <span class="switch"></span>
+                <span>Tự cuộn</span>
+              </label>
+              <button id="clear-log" class="text-button">Xóa hiển thị</button>
+            </div>
+          </div>
+          <div id="system-log" class="system-log">
+            <div class="log-line muted">
+              <time>--:--:--</time><span>CONTROL</span
+              ><p>Dashboard đang kết nối backend…</p>
+            </div>
+          </div>
+        </section>
+        </main>
+      </div>
+
+      <div id="tab-mission" class="tab-content" role="tabpanel">
+        <main class="mission-grid">
+          <section class="mission-workspace">
+
+            <section class="panel map-panel">
+              <div class="panel-heading map-heading">
+                <div>
+                  <span class="section-index">05</span>
+                  <h2>Bản đồ nhiệm vụ</h2>
+                </div>
+                <div class="map-tools">
+                  <span id="map-mission-status" class="map-status loading">Map loading</span>
+                  <span id="map-coordinates">10.772100, 106.657900</span>
+                  <button id="center-map-mission-button" class="text-button">Theo drone</button>
+                </div>
+              </div>
+              <div id="map-mission" class="map-container">
+                <div class="map-loading">
+                  <div class="spinner"></div>
+                  Đang khởi tạo bản đồ…
+                </div>
+              </div>
+              <div class="map-overlay">
+                <span><i class="legend-dot drone"></i> Drone</span>
+                <span><i class="legend-dot waypoint"></i> Waypoint</span>
+                <span><i class="legend-line"></i> Đường bay</span>
+              </div>
+              <div class="map-hint">
+                Nhấp lên bản đồ để thêm waypoint · Kéo marker để chỉnh vị trí
+              </div>
+            </section>
+
+<section class="panel mission-panel">
+            <div class="panel-heading">
+              <div>
+                <span class="section-index">06</span>
+                <h2>Mission composer</h2>
+              </div>
+              <span class="mini-badge neutral" id="mission-count">0 ITEM</span>
+            </div>
+
+            <div class="mission-toolbar">
+              <button data-add-command="VTOL_TAKEOFF" class="tool-button">
+                + VTOL Takeoff
+              </button>
+              <button data-add-command="TRANSITION_FW" class="tool-button">
+                + Transition FW
+              </button>
+              <button data-add-command="VTOL_LAND" class="tool-button">
+                + VTOL Land
+              </button>
+              <select id="load-sample-mission" class="tool-button" style="padding-right: 24px; cursor: pointer;">
+                <option value="" disabled selected>Nạp lộ trình mẫu...</option>
+                <option value="rectangle">Hình chữ nhật cơ bản</option>
+                <option value="bk-logo">Logo ĐH Bách Khoa</option>
+              </select>
+              <button id="clear-editor" class="tool-button subtle">
+                Xóa bảng
+              </button>
+            </div>
+
+            <div class="table-scroll">
+              <table class="mission-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Lệnh</th>
+                    <th>Latitude</th>
+                    <th>Longitude</th>
+                    <th>Alt (m)</th>
+                    <th>Radius</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="waypoint-body">
+                  <tr class="empty-row">
+                    <td colspan="7">
+                      Chưa có waypoint. Nhấp bản đồ hoặc dùng nút phía trên.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="mission-footer">
+              <div class="mission-progress">
+                <span>WP hiện tại</span>
+                <strong id="current-waypoint">0 / 0</strong>
+              </div>
+              <div class="button-row">
+                <button id="upload-mission" class="button primary" disabled>
+                  Upload mission
+                </button>
+                <button id="start-mission" class="button accent" disabled>
+                  ARM & AUTO
+                </button>
+                <button id="clear-vehicle-mission" class="button ghost" disabled>
+                  Xóa trên FC
+                </button>
+              </div>
+            </div>
+          </section>
+          </section>
+        </main>
+      </div>
+
+      <div id="tab-experiments" class="tab-content" role="tabpanel">
+        <main class="dashboard-grid experiments-grid" style="grid-template-columns: 350px 1fr;">
+          <aside class="control-rail">
+            <section class="panel">
+              <div class="panel-heading">
+                <div>
+                  <span class="section-index">07</span>
+                  <h2>Tạo chiến dịch</h2>
+                </div>
+              </div>
+              <div class="field-row">
+                <label>
+                  <span class="field-label">Cấu hình</span>
+                  <select id="exp-profile-select" class="control-input">
+                    <option value="smoke">Smoke Test</option>
+                    <option value="mission">Mission</option>
+                    <option value="wind">Wind</option>
+                  </select>
+                </label>
+              </div>
+              <div class="field-row">
+                <label>
+                  <span class="field-label">Số lần lặp</span>
+                  <input id="exp-reps-input" type="number" class="control-input" min="1" max="10" value="1" />
+                </label>
+                <label>
+                  <span class="field-label">Seed (Tùy chọn)</span>
+                  <input id="exp-seed-input" type="number" class="control-input" placeholder="Tự động" />
+                </label>
+              </div>
+              <div class="button-row">
+                <button id="exp-start-button" class="button primary wide">START EXPERIMENT</button>
+                <button id="exp-abort-button" class="button danger wide" disabled>ABORT RUN</button>
+              </div>
+              <div id="exp-active-status" class="flight-action-status idle" style="margin-top: 1rem;">
+                <span id="exp-active-badge" class="mini-badge">NONE</span>
+                <span id="exp-active-text">Chưa có thí nghiệm đang chạy</span>
+              </div>
+            </section>
+            
+            <section class="panel">
+              <div class="panel-heading">
+                <div>
+                  <span class="section-index">10</span>
+                  <h2>Vi phạm an toàn (Live)</h2>
+                </div>
+              </div>
+              <div class="table-scroll" style="max-height: 250px;">
+                <table class="mission-table">
+                  <thead>
+                    <tr><th>Thời gian</th><th>Loại vi phạm</th><th>Giá trị</th><th>Xử lý</th></tr>
+                  </thead>
+                  <tbody id="exp-violations-body">
+                    <tr class="empty-row"><td colspan="4">Không có vi phạm</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </aside>
+          
+          <section class="mission-workspace">
+            <section class="panel">
+              <div class="panel-heading">
+                <div>
+                  <span class="section-index">08</span>
+                  <h2>Lịch sử chạy</h2>
+                </div>
+                <div class="filters">
+                  <select id="exp-filter-status" class="control-input" style="width: auto;">
+                    <option value="ALL">Tất cả</option>
+                    <option value="PASS">PASS</option>
+                    <option value="FAIL">FAIL</option>
+                  </select>
+                </div>
+              </div>
+              <div class="table-scroll">
+                <table class="mission-table">
+                  <thead>
+                    <tr>
+                      <th>Run ID</th>
+                      <th>Test Case</th>
+                      <th>Phase</th>
+                      <th>Verdict</th>
+                      <th>Time</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="exp-runs-body">
+                    <tr class="empty-row"><td colspan="6">Đang tải dữ liệu...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-heading">
+                <div>
+                  <span class="section-index">09</span>
+                  <h2>So sánh & Kết quả</h2>
+                </div>
+                <button id="exp-compare-button" class="text-button">Tải lại so sánh</button>
+              </div>
+              <div class="table-scroll" style="margin-bottom: 1rem;">
+                <table class="mission-table">
+                  <thead>
+                    <tr>
+                      <th>Case</th>
+                      <th>Rep</th>
+                      <th>Hover RMSE</th>
+                      <th>Transition Loss</th>
+                      <th>Landing Error</th>
+                      <th>Verdict</th>
+                    </tr>
+                  </thead>
+                  <tbody id="exp-compare-body">
+                    <tr class="empty-row"><td colspan="6">Chưa có dữ liệu so sánh</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              
+              <div class="charts-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="chart-container" style="border: 1px solid var(--border); padding: 1rem; border-radius: 4px; text-align: center; color: var(--text-muted);">
+                  Altitude Chart requires data
+                </div>
+                <div class="chart-container" style="border: 1px solid var(--border); padding: 1rem; border-radius: 4px; text-align: center; color: var(--text-muted);">
+                  Path Chart requires data
+                </div>
+                <div class="chart-container" style="border: 1px solid var(--border); padding: 1rem; border-radius: 4px; text-align: center; color: var(--text-muted);">
+                  Attitude Chart requires data
+                </div>
+                <div class="chart-container" style="border: 1px solid var(--border); padding: 1rem; border-radius: 4px; text-align: center; color: var(--text-muted);">
+                  Throttle Chart requires data
+                </div>
+              </div>
+            </section>
+          </section>
+        </main>
+      </div>
+
+    </div>
+
+    <div id="toast-region" class="toast-region" aria-live="polite"></div>
+
+    <dialog id="confirm-dialog" class="confirm-dialog">
+      <form method="dialog">
+        <h3 id="confirm-dialog-title">Xác nhận</h3>
+        <p id="confirm-dialog-message">Bạn có chắc chắn muốn thực hiện hành động này?</p>
+        <div class="dialog-actions">
+          <button type="button" class="button ghost" id="confirm-dialog-cancel">Hủy</button>
+          <button type="button" class="button accent" id="confirm-dialog-ok">Xác nhận</button>
+        </div>
+      </form>
+    </dialog>
+
+    <script src="/vendor/leaflet/leaflet.js"></script>
+    <script src="/app.js"></script>
+  </body>
+</html>

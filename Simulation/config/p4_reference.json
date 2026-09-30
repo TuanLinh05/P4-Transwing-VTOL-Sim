@@ -1,0 +1,177 @@
+{
+  "schema_version": 1,
+  "aircraft": "PteroDynamics X-P4 Transwing",
+  "source_policy": {
+    "measured": "Measured from the bundled P4_clone glTF asset.",
+    "published": "Directly published by PteroDynamics or its X-P4 flight manual.",
+    "presentation": "Shown in the 2021 Transwing presentation; X-P4 applicability is not guaranteed.",
+    "estimated": "Simulation engineering estimate, not a real-aircraft specification."
+  },
+  "sources": {
+    "uafm_rev_d": {
+      "title": "X-P4 Unmanned Aircraft Flight Manual, Revision D",
+      "url": "https://downloads.regulations.gov/FAA-2024-2404-0001/attachment_10.pdf",
+      "type": "published"
+    },
+    "pterodynamics_2025": {
+      "title": "Game Changing Autonomous VTOL Systems",
+      "url": "https://pterodynamics.com/media/PD_TranswingSpecs_2025.pdf",
+      "type": "published"
+    },
+    "transition_video_2021": {
+      "title": "Transwing by Tim Whitehand",
+      "publisher": "ArduPilot",
+      "uploaded": "2021-04-11",
+      "url": "https://www.youtube.com/watch?v=-QAy2u33BEc&t=9s",
+      "type": "presentation"
+    }
+  },
+  "published_x_p4": {
+    "uafm_rev_d": {
+      "mtow_kg": 40.369721,
+      "wingspan_m": 3.99288,
+      "wing_area_m2": 0.836127,
+      "aspect_ratio": 19,
+      "wing_incidence_deg": {
+        "root": 3.2,
+        "tip": 0.9
+      },
+      "wing_washout_deg": 0.0,
+      "tail_airfoil": "NACA0012",
+      "fuselage_length_m": 1.95072,
+      "folded_width_m": 1.28016,
+      "basic_empty_weight_including_batteries_kg": 19.776627,
+      "payload_kg": 6.803886,
+      "battery_weight_kg": 13.018101,
+      "stall_speed_mps": 26.751111,
+      "loiter_speed_mps": 28.294444,
+      "cruise_speed_mps": [30.866667, 33.438889],
+      "dash_speed_mps": 51.444444,
+      "range_km": 111.12,
+      "endurance_min": 60,
+      "ceiling_m": 4572,
+      "max_launch_recovery_altitude_m": 3048
+    },
+    "pterodynamics_2025": {
+      "mtow_kg": 41,
+      "payload_kg": 6.8,
+      "ground_footprint_m": {
+        "length": 2.1,
+        "width": 1.3
+      },
+      "cruise_speed_mps": 31,
+      "dash_speed_mps": 51,
+      "endurance_min": 70,
+      "powertrain": "electric"
+    },
+    "propulsion": {
+      "motor_count": 4,
+      "motor_model": "Hacker Q80-7M-V2",
+      "motor_kv_rpm_per_v": 210,
+      "motor_max_power_w": 5500,
+      "motor_mass_kg": 1.035,
+      "motor_max_rpm": 9000,
+      "esc_model": "Currawong Velocity HS",
+      "esc_mass_kg": 0.25,
+      "esc_max_voltage_v": 60,
+      "esc_sustained_current_a": 150,
+      "esc_peak_current_a": 300,
+      "propeller_diameter_m": 0.5588,
+      "propeller_pitch_m": 0.381,
+      "propeller_max_continuous_rpm": 7000,
+      "vtol_active_propulsors": 4,
+      "fixed_wing_active_propulsors": 2
+    }
+  },
+  "presentation_transition_50_percent": {
+    "timestamp_s": 9,
+    "airspeed_mps": [10, 20],
+    "angle_of_attack_limit_deg": 20,
+    "wing_lift_power_reduction_begins_after_transition_percent": 30,
+    "propulsor_notes": [
+      "cross coupling",
+      "pitch authority is weak",
+      "substantial roll derivative/damping is required"
+    ],
+    "control_surface_notes": [
+      "control surfaces are active",
+      "elevator is the primary pitch control",
+      "ailerons are important for damping roll oscillation"
+    ],
+    "applicability": "Presentation evidence only. Do not treat 10-20 m/s as the published X-P4 stall or cruise envelope."
+  },
+  "simulation_baseline": {
+    "mtow_kg": 40.5,
+    "fold_travel_rad": 2.059432253,
+    "transition_50_percent_rad": -1.029716127,
+    "q_tilt_max_normalized_deg": 20,
+    "q_tilt_forward_rate_deg_s": 20,
+    "provisional_transition_trigger_mps": 27,
+    "transition_assist_release_mps": 32,
+    "fixed_wing_target_airspeed_mps": 34,
+    "transition_rc3": 1750,
+    "fixed_wing_cruise_rc3": 1470,
+    "fixed_wing_controller_scaling_speed_mps": 34,
+    "tecs_speed_weight": 0.5,
+    "tecs_time_constant_s": 8.0,
+    "tecs_throttle_damping": 0.8,
+    "tecs_pitch_min_deg": -5.0,
+    "fixed_wing_pitch_rate_p": 0.08,
+    "fixed_wing_pitch_rate_i": 0.5,
+    "fixed_wing_pitch_rate_ff": 0.5,
+    "ardupilot_sitl_airspeed_type": 100,
+    "ardupilot_use_sitl_airspeed_for_tecs": true,
+    "q_options_disable_synthetic_airspeed_qassist": 4096,
+    "q_assist_angle_deg": 0,
+    "ardupilot_transition_time_ms": 12000,
+    "ardupilot_transition_failure_timeout_s": 30,
+    "aerodynamic_stall_angle_rad": 0.28,
+    "aerodynamic_stall_angle_deg": 16.043,
+    "lifting_surface_alpha0_rad": 0.14,
+    "effective_vtail_area_per_side_m2": 0.2448,
+    "vtail_collision_panel_area_per_side_m2": 0.2448,
+    "main_wing_cp_relative_to_link_cog_m": [-0.13, 0.0, 0.03],
+    "propeller_max_velocity_rad_s": 733.04,
+    "rotor_thrust_coefficient_n_per_rad_s2": 0.00028,
+    "ardupilot_sitl_effective_rotor_thrust_coefficient_n_per_rad_s2": 0.00042,
+    "ardupilot_sitl_propeller_section_area_m2": 0.00621,
+    "ardupilot_sitl_hover_throttle_fraction": 0.6,
+    "folded_hover_rotor_centroid_x_m": -0.371998,
+    "folded_hover_model_cg_x_m": -0.370743,
+    "base_link_estimated_cg_x_m": 0.1,
+    "ardupilot_vtail_mixing_gain": 1.0,
+    "validated_transition_smoke": {
+      "dataflash_log": "00000030.BIN",
+      "takeoff_altitude_m": 30.0,
+      "fixed_wing_hold_s": 20.0,
+      "start_altitude_m": 29.3,
+      "minimum_altitude_m": 15.9,
+      "maximum_groundspeed_mps": 42.8,
+      "maximum_abs_roll_deg": 0.1,
+      "maximum_abs_pitch_deg": 14.6,
+      "ardupilot_transition_confirmed": true
+    },
+    "qassist_guard_smoke": {
+      "dataflash_log": "00000039.BIN",
+      "fixed_wing_observed_s": 18.7,
+      "minimum_altitude_m": 26.6,
+      "maximum_groundspeed_mps": 40.2,
+      "maximum_abs_roll_deg": 0.16,
+      "maximum_abs_pitch_deg": 7.14,
+      "minimum_motor_tilt_deg": 90.0,
+      "angle_assist_messages": 0,
+      "q_options": 4096,
+      "q_assist_angle_deg": 0,
+      "repeated_transition_detected": false
+    },
+    "classification": "estimated"
+  },
+  "known_gaps": [
+    "The real closed-loop linear actuator, position feedback, homing and fault monitoring are represented by synchronized revolute joints.",
+    "The standard ArduPilot tilt-quad surrogate does not yet deactivate one propulsor pair during fixed-wing cruise.",
+    "Mass distribution, inertia, center of gravity and aerodynamic coefficients remain estimated.",
+    "The ArduPilot blade-section thrust coefficient is a ground-takeoff SITL calibration, not a measured X-P4 propeller map.",
+    "The SITL pitot and aerodynamic trim are simulation calibrations and are not production-aircraft settings.",
+    "The video transition envelope is not proven to be the production X-P4 envelope."
+  ]
+}

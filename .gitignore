@@ -1,0 +1,38 @@
+# ---- OS / editor ----
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*~
+*.bak
+
+# ---- Python ----
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+
+# ---- ArduPilot SITL runtime state (EEPROM, DataFlash logs, tlogs, terrain) ----
+Simulation/ardupilot/sitl_state/
+*.BIN
+*.tlog
+*.tlog.raw
+eeprom.bin
+
+# ---- Experiment runs and logs ----
+Simulation/runs/*
+!Simulation/runs/.gitkeep
+Log/
+*.log
+
+# ---- Local-only folders ----
+Backup/
+tmp/
+Report/
+Ref/MiniHawk-VTOL-master/
+
+# ---- LaTeX build files ----
+*.aux
+*.out
+*.toc
+*.synctex.gz

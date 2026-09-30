@@ -1,0 +1,13 @@
+{
+  "home": {
+    "latitude": 10.772100,
+    "longitude": 106.657900,
+    "altitude_m": 10.0
+  },
+  "mission_policy": {
+    "operating_radius_m": 500.0,
+    "max_relative_altitude_m": 150.0,
+    "max_items": 100
+  },
+  "_comment": "Nguồn chân lý cho vị trí Home và policy mission. Python đọc trực tiếp; SDF/waypoints/shell phải đồng bộ tay hoặc qua tools/sync_site.py."
+}

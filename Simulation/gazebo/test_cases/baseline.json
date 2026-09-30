@@ -1,0 +1,11 @@
+{
+  "name": "baseline",
+  "description": "P4 Transwing baseline: no added payload and no wind. Only this case is enabled until aerodynamic identification is complete.",
+  "payload": {
+    "mass_kg": 0.0
+  },
+  "wind": {
+    "mode": "disabled",
+    "velocity_m_s": [0.0, 0.0, 0.0]
+  }
+}

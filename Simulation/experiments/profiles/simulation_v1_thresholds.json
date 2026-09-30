@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "profile": "simulation_v1",
+  "hover_position_rmse_m": {"max": 2.0},
+  "hover_altitude_rmse_m": {"max": 1.5},
+  "hover_max_attitude_deg": {"max": 35.0},
+  "transition_altitude_loss_m": {"max": 8.0},
+  "fixed_wing_altitude_rmse_m": {"max": 4.0},
+  "cross_track_p95_m": {"max": 25.0},
+  "actuator_saturation_s": {"max": 2.0},
+  "landing_error_m": {"max": 5.0},
+  "touchdown_vertical_speed_mps": {"max": 1.0},
+  "mission_completed": {"equals": true}
+}

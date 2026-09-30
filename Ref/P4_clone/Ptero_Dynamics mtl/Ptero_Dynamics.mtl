@@ -1,0 +1,9 @@
+newmtl Material #51
+Kd 1 1 1
+d 1
+Ke 0 0 0
+illum 2
+map_Kd images/Ptero.jpg
+Ks 0.634378 0.634378 0.634378
+Ns 390.808289
+

@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "platform": {
+    "supported_wsl_ubuntu": ["22.04", "24.04"],
+    "required_gazebo_sim_major": 8
+  },
+  "tested_environment": {
+    "ubuntu": "22.04",
+    "gazebo_sim": "8.14.0",
+    "ardupilot_commit": "4f50f1997fec263e648119402991beda1071bc7c",
+    "ardupilot_describe": "ArduPilot-4.6.0-beta1-7612-g4f50f1997f",
+    "ardupilot_gazebo_commit": "082a0fe231f6e63bc8d1598f1cba461d9e2ea7f5",
+    "python": "3.10.12",
+    "pymavlink": "2.4.49",
+    "mavproxy": "1.8.74"
+  },
+  "policy": {
+    "gazebo_major_mismatch": "error",
+    "git_commit_mismatch": "warning",
+    "python_package_version_mismatch": "warning"
+  }
+}

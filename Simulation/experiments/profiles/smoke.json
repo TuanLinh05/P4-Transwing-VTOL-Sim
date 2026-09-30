@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "case": "baseline",
+  "mission": "short_vtol_rectangle",
+  "profile": "reproducible",
+  "repetitions": 1,
+  "seed_base": 230700,
+  "timeouts": {
+    "stack_ready_s": 60,
+    "arm_s": 10,
+    "takeoff_s": 90,
+    "mission_s": 600,
+    "landing_s": 120
+  },
+  "safety": {
+    "max_altitude_m": 120,
+    "max_distance_home_m": 500,
+    "max_roll_deg": 60,
+    "max_pitch_deg": 60
+  }
+}
